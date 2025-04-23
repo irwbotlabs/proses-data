@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Proses Data</title>
+  <style>
+    :root {
+      --bg-color: #000000;
+      --text-color: #FFFFFF;
+      --section-bg: #1C1C1E;
+      --accent-color: #0A84FF;
+      --placeholder-color: #666;
+      --warning-color: #FFD60A;
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: var(--font-family);
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+      height: 100%;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .section {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-bottom: 5px;
+    }
+
+    .section-title {
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    .line-count {
+      font-size: 14px;
+      color: #bbb;
+    }
+
+    .warning {
+      color: var(--warning-color);
+      font-weight: 600;
+      font-size: 14px;
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    textarea {
+      width: 100%;
+      height: 130px;
+      background-color: var(--section-bg);
+      border: 1px solid #2C2C2E;
+      border-radius: 10px;
+      color: var(--text-color);
+      font-size: 16px;
+      font-weight: 500;
+      padding: 12px;
+      resize: none;
+    }
+
+    .output-container {
+      width: 100%;
+      position: relative;
+      margin-top: 10px;
+    }
+
+    .output {
+      background-color: var(--section-bg);
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 500;
+      padding: 12px;
+      height: 130px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      text-align: center;
+    }
+
+    .placeholder {
+      position: absolute;
+      top: 12px;
+      width: 100%;
+      text-align: center;
+      font-style: italic;
+      font-weight: 500;
+      color: var(--placeholder-color);
+      pointer-events: none;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 20px;
+      gap: 10px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px 0;
+      font-size: 16px;
+      font-weight: 600;
+      background-color: var(--accent-color);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+    }
+
+    button:hover {
+      background-color: #0062cc;
+    }
+
+    @media (min-width: 768px) {
+      h1 {
+        font-size: 26px;
+      }
+
+      button {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Proses Data</h1>
+
+    <div class="section">
+      <div class="section-title">Data</div>
+      <div class="line-count" id="inputLineCount">Baris: 0</div>
+    </div>
+    <textarea id="inputData" placeholder="Tempel data di sini..." oninput="updateLineCount('input')"></textarea>
+    <div id="warning" class="warning"></div>
+
+    <div class="section">
+      <div class="section-title">Hasil</div>
+      <div class="line-count" id="outputLineCount">Baris: 0</div>
+    </div>
+
+    <div class="output-container">
+      <div id="placeholder" class="placeholder">Tunggu proses...</div>
+      <div id="output" class="output"></div>
+    </div>
+
+    <div class="actions">
+      <button onclick="processData()">Proses</button>
+      <button onclick="copyOutput()">Salin</button>
+      <button onclick="clearAll()">Bersihkan</button>
+    </div>
+  </div>
+
+  <script>
+    function processData() {
+      const inputLines = document.getElementById('inputData').value
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0);
+
+      const warningDiv = document.getElementById('warning');
+      const outputDiv = document.getElementById('output');
+      const placeholder = document.getElementById('placeholder');
+      let output = '';
+
+      if (inputLines.length % 2 !== 0) {
+        warningDiv.textContent = 'Jumlah baris ganjil, data tidak diproses!';
+        outputDiv.textContent = '';
+        placeholder.style.display = 'block';
+        updateLineCount('output');
+        return;
+      } else {
+        warningDiv.textContent = '';
+      }
+
+      for (let i = 0; i < inputLines.length - 1; i += 2) {
+        output += `${inputLines[i + 1]},${inputLines[i]}\n`;
+      }
+
+      outputDiv.textContent = output.trim();
+      placeholder.style.display = output ? 'none' : 'block';
+      updateLineCount('output');
+    }
+
+    function copyOutput() {
+      const outputText = document.getElementById('output');
+      if (!outputText.textContent.trim()) return;
+
+      const range = document.createRange();
+      range.selectNode(outputText);
+      window.getSelection().removeAllRanges();
+      window.getSelection().addRange(range);
+      document.execCommand('copy');
+      window.getSelection().removeAllRanges();
+    }
+
+    function clearAll() {
+      document.getElementById('inputData').value = '';
+      document.getElementById('output').textContent = '';
+      document.getElementById('placeholder').style.display = 'block';
+      document.getElementById('warning').textContent = '';
+      updateLineCount('input');
+      updateLineCount('output');
+    }
+
+    function updateLineCount(type) {
+      const input = document.getElementById('inputData').value
+        .split('\n')
+        .filter(l => l.trim().length > 0);
+      const outputText = document.getElementById('output').textContent.trim();
+      const inputLineCount = document.getElementById('inputLineCount');
+      const outputLineCount = document.getElementById('outputLineCount');
+
+      if (type === 'input') {
+        inputLineCount.textContent = `Baris: ${input.length}`;
+      } else {
+        outputLineCount.textContent = `Baris: ${outputText ? outputText.split('\n').length : 0}`;
+      }
+    }
+  </script>
+</body>
+</html>
